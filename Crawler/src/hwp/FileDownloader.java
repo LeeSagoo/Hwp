@@ -21,6 +21,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  *
  */
 public class FileDownloader extends Thread{
+    public static final String FILE_TYPE_HANGUL = ".hwp";
     private static final String DOWNLOAD_URL = "https://www.smpa.go.kr/common/attachfile/attachfileDownload.do?attachNo=%s";
     private BlockingQueue<String> queue = new LinkedBlockingQueue<>();
 
@@ -29,19 +30,19 @@ public class FileDownloader extends Thread{
         while(true){
             try {
                 String id = queue.take();
-                download(String.format(DOWNLOAD_URL, id));
+                download(id);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
 
-    private String download(String url) throws Exception {
+    private String download(String id) throws Exception {
         Auth.setSSL();
-        InputStream in = new URL(url).openStream();
+        InputStream in = new URL(String.format(DOWNLOAD_URL, id)).openStream();
 
         String day = new SimpleDateFormat("yyyyMMdd").format(Calendar.getInstance().getTime());
-        FileOutputStream outputStream = new FileOutputStream(new File("E:\\download\\"+ day+".hwp"));
+        FileOutputStream outputStream = new FileOutputStream(new File("E:\\download\\"+ day+"_"+id+".hwp"));
 
         int read = 0;
         byte[] bytes = new byte[1024];
@@ -54,7 +55,7 @@ public class FileDownloader extends Thread{
         outputStream.close();;
 
         // 파일을 읽는다. "E:\\lib\\집회.hwp"
-        HWPFile hwpFile = HWPReader.fromFile("E:\\download\\"+ day+".hwp");
+        HWPFile hwpFile = HWPReader.fromFile("E:\\download\\"+ day+"_"+id+".hwp");
 
         // 파일에서 첫번째 구역을 얻는다.
         Section s = hwpFile.getBodyText().getSectionList().get(0);
@@ -74,7 +75,7 @@ public class FileDownloader extends Thread{
 
     public static void main(String[] args) throws KeyManagementException, NoSuchAlgorithmException {
         FileDownloader downloader = new FileDownloader();
-//        00219257
+//        00219257 00219257
 //        00219256
 //        00219255
 //        00219225
@@ -84,7 +85,7 @@ public class FileDownloader extends Thread{
 //        00219064
 //        00219063
 //        00219062
-        downloader.add_SmpaId("00219225");
+        downloader.addSmpaId("00157431");
         downloader.start();
 
 
@@ -109,7 +110,7 @@ public class FileDownloader extends Thread{
 //        }
     }
 
-    public void add_SmpaId(String id){
+    public void addSmpaId(String id){
         this.queue.add(id);
     }
 }
